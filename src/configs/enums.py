@@ -10,7 +10,7 @@ class EnviromentVariables(Enum):
     """
     BUCKET_NAME = "project-main"
     TRAINING_UNIVERSE_REMOTE_SUFFIX = "training-universe/"
-    MODEL_REGISTRY_REMOTE_SUFFIX = "training-universe/api-models/"
+    MODEL_REGISTRY_REMOTE_SUFFIX = "s3://project-main/training-universe/api-models/"
     TRAINING_UNIVERSE_DVC_CACHE = "s3://project-main/training-universe/dvc-cache/"
     BASE_EXPERIMENTS_DIR = os.path.abspath("exp")
 
