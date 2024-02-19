@@ -1,5 +1,5 @@
 from src.utils.config_parser import create_config
-from pipelines.training_pipeline import training_data_pipeline, get_model, dvc_handler, neptune_logging, \
+from src.helpers.training_pipeline import training_data_pipeline, get_model, dvc_handler, neptune_logging, \
     s3_upload_artifact, decrement_run_id
 import joblib
 from src.logger.loggers import get_logger
