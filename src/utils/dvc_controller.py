@@ -9,12 +9,24 @@ from src.configs.enums import EnvironmentVariables
 
 class DvcDataSaver:
     def __init__(self, remote_name: str = "myremote") -> None:
+        """
+        Initializes the DvcDataSaver object with a specified remote name, sets the remote URL
+        from environment variables, and initializes or configures the DVC repository.
+
+        Args:
+            remote_name (str): The name of the DVC remote storage. Defaults to "myremote".
+        """
         self.remote_name = remote_name
         self.remote_url = EnvironmentVariables.TRAINING_UNIVERSE_DVC_CACHE.value
         self.dvc_repo = self.initialize_dvc_repo()
 
     def initialize_dvc_repo(self) -> Repo:
-        """Initialize DVC repo if not already initialized and configure DVC remote."""
+        """
+        Initializes the DVC repository if not already initialized and configures the DVC remote.
+
+        Returns:
+            Repo: The DVC repository object.
+        """
         try:
             if not os.path.exists(".dvc"):
                 repo = Repo.init(no_scm=True)
@@ -28,8 +40,14 @@ class DvcDataSaver:
             logging.error(f"Error initializing DVC repository: {e}")
             raise
 
-    def configure_dvc_remote(self, repo: Repo):
-        """Configure DVC remote storage."""
+    def configure_dvc_remote(self, repo: Repo) -> None:
+        """
+        Configures the DVC remote storage in the repository.
+
+        Args:
+            repo (Repo): The DVC repository object.
+        """
+
         config_path = os.path.join(repo.root_dir, '.dvc', 'config')
         config = configparser.ConfigParser()
 
@@ -53,7 +71,15 @@ class DvcDataSaver:
             raise
 
     def save_data(self, source: Union[str, List[str]]) -> List[str]:
-        """Save data to DVC and push it to the remote storage."""
+        """
+        Saves data to DVC and pushes it to the remote storage.
+
+        Args:
+            source (Union[str, List[str]]): The file or list of files to be saved and pushed to DVC.
+
+        Returns:
+            List[str]: A list of created DVC file paths.
+        """
         try:
             sources = [source] if isinstance(source, str) else source
             dvc_files_created = []

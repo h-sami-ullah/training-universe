@@ -2,6 +2,7 @@ import boto3
 import os
 from src.configs.enums import EnvironmentVariables
 import logging
+from typing import Tuple
 
 
 class S3handler:
@@ -16,19 +17,19 @@ class S3handler:
         self.s3suffix = EnvironmentVariables.TRAINING_UNIVERSE_REMOTE_SUFFIX.value
         self.s3 = boto3.client("s3")
 
-    def download_file_from_s3(self, bucket_name, object_key, local_download_path=None):
+    def download_file_from_s3(self, bucket_name: str, object_key: str, local_download_path: str = None) -> str:
         """
         Downloads a single file from an S3 bucket to a local directory.
 
         Args:
-            bucket_name (str): The name of the S3 bucket to download the file from.
-            object_key (str): The S3 object key (including prefix) of the file to download.
-            local_download_path (str, optional): The local directory path where the file will be downloaded.
-                                                 If not provided, the current working directory will be used.
-        Returns:
-            str: The full local path of the downloaded file.
-        """
+            bucket_name: The name of the S3 bucket to download the file from.
+            object_key: The S3 object key (including prefix) of the file to download.
+            local_download_path: The local directory path where the file will be downloaded.
+                                 If not provided, the current working directory will be used.
 
+        Returns:
+            The full local path of the downloaded file.
+        """
 
         # Use current working directory if no download path is provided
         if local_download_path is None:
@@ -49,27 +50,27 @@ class S3handler:
         return local_file_path
 
     @staticmethod
-    def split_s3_path(s3_path):
+    def split_s3_path(s3_path: str) -> Tuple[str, str]:
         """
         Splits an S3 URI into bucket, prefix, and file name.
 
         Args:
-            s3_path (str): S3 URI in the format s3://bucket/prefix/file.extension.
+            s3_path: S3 URI in the format s3://bucket/prefix/file.extension.
 
         Returns:
-            tuple: Contains bucket, prefix, and file name.
+            A tuple containing bucket, prefix, and file name.
         """
         path_parts = s3_path.replace("s3://", "").split("/")
         bucket = path_parts.pop(0)
         prefix = "/".join(path_parts[0:])
         return bucket, prefix
 
-    def upload_folder_or_file_to_s3(self, input_path: str):
+    def upload_folder_or_file_to_s3(self, input_path: str) -> None:
         """
         Uploads a directory or file to an S3 bucket.
 
         Args:
-            input_path (str): The file or folder to be uploaded.
+            input_path: The file or folder to be uploaded.
         """
         logging.info("Uploading results to S3 initiated...")
 
@@ -82,12 +83,12 @@ class S3handler:
             logging.error("Failed to upload to S3. Quitting upload process.", exc_info=True)
             raise
 
-    def _upload_file_to_s3(self, file_path: str):
+    def _upload_file_to_s3(self, file_path: str) -> None:
         """
         Helper method to upload a single file to S3.
 
         Args:
-            file_path (str): Path of the file to upload.
+            file_path: Path of the file to upload.
         """
         filename = os.path.basename(file_path)
         s3_dest_path = os.path.join(self.s3suffix, filename).replace("\\", "/")
@@ -95,12 +96,12 @@ class S3handler:
         self.s3.upload_file(file_path, self.s3bucketname, s3_dest_path)
         logging.info("Upload successful.")
 
-    def _upload_directory_to_s3(self, directory_path: str):
+    def _upload_directory_to_s3(self, directory_path: str) -> None:
         """
         Helper method to upload a directory to S3.
 
         Args:
-            directory_path (str): Path of the directory to upload.
+            directory_path: Path of the directory to upload.
         """
         for root, _, files in os.walk(directory_path):
             for file in files:
