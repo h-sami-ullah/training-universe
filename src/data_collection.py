@@ -1,4 +1,5 @@
 import pandas as pd
+import logging
 
 
 class DataCollection:
@@ -17,17 +18,21 @@ class DataCollection:
                                               or return a copy with dropped rows/columns.
                                               Defaults to True.
         """
-
+        self.df = None
         try:
             self.df = pd.read_csv(file_path)
-        except FileNotFoundError:
-            print(f"Error: File not found at {file_path}. Please check the file path and try again.")
+            logging.info(f"Data loaded successfully from {file_path}.")
+        except FileNotFoundError as e:
+            logging.error(f"File not found at {file_path}. Please check the file path and try again. Error: {e}")
             raise
         except Exception as e:
-            print(f"An unexpected error occurred: {e}")
+            logging.error(f"An unexpected error occurred while loading data: {e}")
             raise
-        self.df.dropna(axis=dropna_axis, inplace=dropna_inplace)
-        self.resturants_ids = None
+
+        if self.df is not None:
+            self.df.dropna(axis=dropna_axis, inplace=dropna_inplace)
+            logging.info("Missing values dropped from DataFrame.")
+        self.restaurants_ids = None
         self.generate_restaurant_ids()  # Automatically generate restaurant IDs upon initialization
 
     def generate_restaurant_ids(self) -> None:
@@ -35,8 +40,12 @@ class DataCollection:
         Generates unique restaurant IDs based on latitude and longitude and labels
         each row in the dataframe with the corresponding restaurant ID.
         """
+        if self.df is None:
+            logging.error("DataFrame is not initialized.")
+            return
+
         restaurants_ids = {}
-        for lat, lon in zip(self.df.restaurant_lat, self.df.restaurant_lon):
+        for lat, lon in zip(self.df['restaurant_lat'], self.df['restaurant_lon']):
             id = f"{lat}_{lon}"
             if id not in restaurants_ids:
                 restaurants_ids[id] = {"lat": lat, "lon": lon}
@@ -45,8 +54,10 @@ class DataCollection:
             restaurants_ids[key]['id'] = i
 
         self.df['restaurant_id'] = [restaurants_ids[f"{lat}_{lon}"]['id'] for lat, lon in
-                                    zip(self.df.restaurant_lat, self.df.restaurant_lon)]
-        self.resturants_ids = restaurants_ids
+                                    zip(self.df['restaurant_lat'], self.df['restaurant_lon'])]
+        self.restaurants_ids = restaurants_ids
+        logging.info("Unique restaurant IDs generated.")
+
 
     def get_unique_couriers(self) -> int:
         """
@@ -55,6 +66,10 @@ class DataCollection:
         Returns:
             int: The count of unique courier IDs.
         """
+
+        if self.df is None:
+            logging.error("DataFrame is not initialized. Unable to determine unique couriers.")
+            return 0
         return len(self.df.courier_id.unique())
 
     def get_unique_restaurants(self) -> int:
@@ -65,7 +80,10 @@ class DataCollection:
         Returns:
             int: The count of unique restaurants.
         """
-        return len(self.df.restaurant_id.unique())
+        if self.df is None:
+            logging.error("DataFrame is not initialized. Unable to determine unique restaurants.")
+            return 0
+        return len(self.df['restaurant_id'].unique())
 
     def get_dataframe(self) -> pd.DataFrame:
         """
@@ -74,7 +92,23 @@ class DataCollection:
         Returns:
             pd.DataFrame: The processed DataFrame with restaurant IDs.
         """
+        if self.df is None:
+            logging.error("DataFrame is not initialized.")
+            return pd.DataFrame()  # Return an empty DataFrame as a safe fallback
         return self.df
+
+    def save_dataframe(self, file_path: str):
+        """
+        Saves the DataFrame to a CSV file.
+
+        Args:
+            file_path (str): The file path to save the CSV file.
+        """
+        if self.df is None:
+            logging.error("DataFrame is not initialized. Unable to save.")
+            return
+        self.df.to_csv(file_path, index=False)
+        logging.info(f"DataFrame saved to {file_path}.")
 
 
 if __name__ == "__main__":
