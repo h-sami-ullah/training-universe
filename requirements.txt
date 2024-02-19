@@ -1,0 +1,9 @@
+pandas
+h3
+numpy
+sklearn
+boto3==1.20.24
+dvc[s3]
+easydict
+neptune
+neptune-sklearn
