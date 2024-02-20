@@ -7,49 +7,52 @@ definitions:
             - linux
         image: python:3.8
         script:
-          - echo "INSTALLING AWS CLI"
           - apt update
-          - pip install awscli
-          - echo "START CONFIGURE AWS CREDENTIALS"
+          - pip install awscli 
+          - echo "START CONFIGURE AWS CREDIENTIALS"
           - aws configure set aws_access_key_id ${AccessKey}
           - aws configure set aws_secret_access_key ${SecretKey}
           - aws configure set region us-east-1
           - aws configure set output json
-          - echo "START ACCESSING AWS ECR"
+          - echo "START LOGIN AWS ECR"
           - aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin ${Account}.dkr.ecr.us-east-1.amazonaws.com
+          - echo "START EXPORT ENV VAR"
           - export AWS_ACCESS_KEY_ID=${AccessKey}
           - export AWS_SECRET_ACCESS_KEY=${SecretKey}
+          - export PORT=${PORT}
           - echo "START BUILDING IMAGE"
-          - docker build -t ${ImageName} .
+          - make build PORT=${PORT} image_tag=${ImageName}
           - pipe: atlassian/aws-ecr-push-image:2.1.0
             variables:
               AWS_ACCESS_KEY_ID: ${AccessKey}
               AWS_SECRET_ACCESS_KEY: ${SecretKey}
-              AWS_DEFAULT_REGION: us-east-1
+              AWS_DEFAULT_REGION: us-east-1 
               IMAGE_NAME: ${ImageName}
-              TAGS: "latest"
-              DEBUG: "true"
+              TAGS: 'latest'
+              DEBUG: 'true'
           - pipe: atlassian/aws-ecs-deploy:1.8.0
             variables:
-              AWS_ACCESS_KEY_ID: ${AccessKey}
+              AWS_ACCESS_KEY_ID: ${AccessKey} 
               AWS_SECRET_ACCESS_KEY: ${SecretKey}
-              AWS_DEFAULT_REGION: us-east-1
+              AWS_DEFAULT_REGION: us-east-1 
               CLUSTER_NAME: ${ClusterName}
               SERVICE_NAME: ${ServiceName}
-              FORCE_NEW_DEPLOYMENT: "true"
-              DEBUG: "true"
+              FORCE_NEW_DEPLOYMENT: 'true' 
+              DEBUG: 'true' 
     - step: &linting-code
         name: Linting code
         image: python:3.8
         script:
-          - echo "START LINTING..."
-          - pip install black flake8
-          - black --check .
+          - echo "START LINTING"
+          - echo "pip install black flake8"
+          - echo "black ."
 
 pipelines:
   branches:
     develop:
       - step: *linting-code
       - step: *push-update-ecs
+        deployment: staging
     master:
       - step: *push-update-ecs
+        deployment: production
