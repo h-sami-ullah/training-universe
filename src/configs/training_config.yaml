@@ -39,6 +39,7 @@ dvc_settings:
 
 
 logger:
+    folder: "logs"
     type: "neptune"
     settings:
       project_name: "Projects-Hafiz/Hotspot-Finder"
@@ -46,3 +47,10 @@ logger:
       tags:
         - "RandomForestRegressor"
         - "regression"
+
+clear_cache:
+  if_data: false
+  if_old_model_and_log: ture
+  if_dvc: ture
+
+
