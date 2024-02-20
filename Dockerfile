@@ -24,6 +24,9 @@ RUN --mount=type=cache,target=/root/.cache/pip \
 # Copy the source code into the container.
 COPY . .
 # Expose the port that the application listens on.
-EXPOSE 5005
+ENV PORT=${PORT}
+ENV AWS_ACCESS_KEY_ID="TOKEN"
+ENV AWS_SECRET_ACCESS_KEY="TOKEN"
+EXPOSE ${PORT}
 # Run the application.
-CMD ["uvicorn", "src.prediction:app", "--host", "0.0.0.0", "--port", "5005"]
+CMD ["uvicorn", "api.run:app", "--host", "0.0.0.0", "--port", "5005"]
