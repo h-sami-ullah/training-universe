@@ -3,7 +3,7 @@ import os
 from src.configs.enums import EnvironmentVariables
 import logging
 from typing import Tuple
-
+import uuid
 
 class S3handler:
 
@@ -50,7 +50,7 @@ class S3handler:
         return local_file_path
 
     @staticmethod
-    def split_s3_path(s3_path: str) -> Tuple[str, str]:
+    def parse_s3_uri(s3_path: str) -> Tuple[str, str]:
         """
         Splits an S3 URI into bucket, prefix, and file name.
 
@@ -66,6 +66,7 @@ class S3handler:
         return bucket, prefix
 
     def upload_folder_or_file_to_s3(self, input_path: str) -> None:
+
         """
         Uploads a directory or file to an S3 bucket.
 
