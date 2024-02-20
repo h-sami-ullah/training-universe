@@ -1,18 +1,18 @@
 from src.utils.config_parser import create_config
 from src.helpers.training_pipeline import training_data_pipeline, get_model, dvc_handler, neptune_logging, \
-    s3_upload_artifact, decrement_run_id
-import joblib
+    s3_upload_artifact
 from src.logger.loggers import get_logger
 import argparse
 import os
 import logging
 import neptune.integrations.sklearn as npt_utils
 import matplotlib.pyplot as plt
+import pickle
 
 
-def setup_logging(run_id):
+def setup_logging(configs, run_id):
     """Set up logging to file and console."""
-    log_filename = os.path.join("logs", f"{run_id}.log")
+    log_filename = os.path.join(configs['logger']['folder'], f"{run_id}.log")
     os.makedirs(os.path.dirname(log_filename), exist_ok=True)
 
     # Configure root logger
@@ -29,7 +29,7 @@ def main(args):
     run = get_logger(configs)
     run_id = run["sys/id"].fetch()
 
-    log_filename = setup_logging(run["sys/id"].fetch())
+    log_filename = setup_logging(configs, run["sys/id"].fetch())
     logging.info("Training pipeline started.")
 
     X_train, X_test, y_train, y_test = training_data_pipeline(configs, args.skip_feature_generator)
@@ -46,23 +46,11 @@ def main(args):
     model_dir = configs.get('model', {}).get('model_save_folder', '.')
     model_save_path = os.path.join(model_dir, f"{run_id}.pkl")
     os.makedirs(os.path.dirname(model_save_path), exist_ok=True)
-    joblib.dump(model, model_save_path)
-
+    pickle.dump(model, open(model_save_path, 'wb'))
     logging.info(f"Model is saved in {model_save_path} file")
-
+    s3_upload_artifact(model_save_path)
     dvc_handler(configs)
     neptune_logging(configs, run)
-
-    s3_upload_artifact(model_save_path)
-    run['logs/' + os.path.basename(log_filename)].upload(log_filename)
-    run_id = decrement_run_id(run_id)
-
-    log_file_old = os.path.join("logs", f"{run_id}.log")
-    model_file_old = os.path.join(model_dir, f"{run_id}.pkl")
-    if os.path.isfile(log_file_old) and os.path.isfile(model_file_old):
-        os.remove(log_file_old)
-        os.remove(model_file_old)
-
 
 
 if __name__ == "__main__":
