@@ -36,6 +36,10 @@ async def deploy_model(s3_uri: str):
 
         # Clear any previous models in the directory
         models_dir = 'models'
+        if not os.path.exists(models_dir):
+            os.makedirs(models_dir)
+            logging.info(f"'{models_dir}' directory created")
+
         for f in os.listdir(models_dir):
             if f.endswith('.pkl'):
                 os.remove(os.path.join(models_dir, f))
