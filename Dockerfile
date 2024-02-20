@@ -27,6 +27,7 @@ COPY . .
 ENV PORT=${PORT}
 ENV AWS_ACCESS_KEY_ID="TOKEN"
 ENV AWS_SECRET_ACCESS_KEY="TOKEN"
+ENV PORT=${PORT}
 EXPOSE ${PORT}/tcp
 # Run the application.
-CMD ["uvicorn", "api.run:app", "--host", "0.0.0.0", "--port", "5005"]
+CMD ["sh", "-c", "uvicorn api.run:app --host 0.0.0.0 --port $PORT"]
