@@ -4,7 +4,6 @@ import collections.abc
 from math import radians
 import h3
 from sklearn.preprocessing import LabelEncoder
-import logging
 from typing import Dict, Union, Tuple, List
 
 
@@ -332,7 +331,7 @@ class FeatureExtractor:
 
 if __name__ == "__main__":
     # Example usage
-    from data_collection import *
+    from src.dataloader.data_collection import *
 
     data_collector = DataCollection(r"C:\Users\Hafiz\Downloads\Laptop\Personal\Notebook\final_dataset (2).csv")
     dataframe = data_collector.get_dataframe()
