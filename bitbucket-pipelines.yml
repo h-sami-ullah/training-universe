@@ -20,7 +20,7 @@ definitions:
           - export AWS_ACCESS_KEY_ID=${AccessKey}
           - export AWS_SECRET_ACCESS_KEY=${SecretKey}
           - echo "START BUILDING IMAGE"
-          - docker build -t ${ImageName} .
+          - make build PORT=${PORT} image_tag=${ImageName}
           - pipe: atlassian/aws-ecr-push-image:2.1.0
             variables:
               AWS_ACCESS_KEY_ID: ${AccessKey}
