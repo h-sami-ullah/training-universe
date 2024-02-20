@@ -1,8 +1,8 @@
-from src.data_collection import DataCollection
-from src.feature_generation import FeatureExtractor
+from src.dataloader.data_collection import DataCollection
+from src.feature.feature_generation import FeatureExtractor
 import logging
 import pandas as pd
-from typing import Tuple, Dict, Any, Union
+from typing import Tuple
 import copy
 from src.helpers.training_pipeline import prepare_model_data
 
