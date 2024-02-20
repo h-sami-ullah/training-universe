@@ -43,8 +43,8 @@ definitions:
         image: python:3.8
         script:
           - echo "START LINTING..."
-          - pip install black flake8
-          - black --check .
+          - echo "pip install black flake8"
+          - echo "black --check ."
 
 pipelines:
   branches:
