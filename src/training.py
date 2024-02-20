@@ -56,7 +56,7 @@ def main(args):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Run the training pipeline with a configuration file.")
 
-    parser.add_argument('-c', '--config_path', type=str, default='src/configs/training_config.yaml',
+    parser.add_argument('-c', '--config_path', type=str, default='src/configs/config.yaml',
                         help='Path to the configuration file in JSON format.')
     parser.add_argument('-s', '--skip_feature_generator', action='store_true',
                         help='Skip running the feature generator.')

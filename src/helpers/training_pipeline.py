@@ -1,5 +1,5 @@
-from src.data_collection import DataCollection
-from src.feature_generation import FeatureExtractor
+from src.dataloader.data_collection import DataCollection
+from src.feature.feature_generation import FeatureExtractor
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestRegressor
 import os
@@ -10,7 +10,7 @@ from src.utils.s3_handler import S3handler
 from src.configs.enums import EnvironmentVariables
 import logging
 import pandas as pd
-from typing import Tuple, Dict, Any, Union
+from typing import Tuple, Dict, Any
 from sklearn.base import BaseEstimator
 import copy
 import time
@@ -194,7 +194,6 @@ def neptune_logging(configs: Dict[str, Any], run):
         if configs['dvc_settings']['dvc']:
             dvc_files = glob.glob(os.path.join(os.getcwd(), "*.dvc"))
             for dvc_file in dvc_files:
-                print(dvc_file, "I am dvc file")
                 run["data/" + os.path.basename(dvc_file)].upload(os.path.basename(dvc_file))
         model_path = os.path.join(configs['model']['model_save_folder'], run["sys/id"].fetch() + ".pkl")
         run["model/" + run["sys/id"].fetch() + ".pkl"].upload(model_path)
