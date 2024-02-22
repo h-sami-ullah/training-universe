@@ -5,6 +5,7 @@ import pandas as pd
 from typing import Tuple
 import copy
 from src.helpers.training_pipeline import prepare_model_data
+import os
 
 
 def prediction_data_pipeline(path: str = None, skip_feature_generator: bool = False) -> Tuple[pd.DataFrame, pd.Series]:
@@ -26,6 +27,7 @@ def prediction_data_pipeline(path: str = None, skip_feature_generator: bool = Fa
             logging.info("Skipping Feature Generation, The provided file is already processed")
 
             df = pd.read_csv(path)
+            logging.info("File has successfully been read")
         else:
             data_collector = DataCollection(path)
             logging.info("Data Collector initialized.")

@@ -57,7 +57,7 @@ To set up the project locally:
 conda create --name py38 python=3.8     # set up a virtual environment with python 3.8 
 git clone <repository-url>              # Clone the repository
 cd local/path/to/repository             
-pip install -r requirements.txt         # Installs all required depencies
+pip install -r requirements.txt         # Installs all required dependencies
 
 ```
 
@@ -84,13 +84,25 @@ The inference is hosted as an API, to run API
 * to only build the training-universe image, run `make build PORT=5005 image_tag=training-universe`
 * to only deploy the training-universe service, run `make deploy PORT=5005 image_tag=training-universe`
 #### 5.2.2- Without Docker
-* Set up the environment as per described in 
+* Set up the environment as per described in step [`4. Getting Started`](#4-getting-started) 
+* run `python -m api.run` and it will start an API
+
+#### 5.2.3- API Handling
+The API has two main routes `deploy_model` and `predict_file`
+1. `deploy_model` uses s3_uri to deploy the model in the API
+2. `predict_file` has four parameters
+   * `file` it is csv input file of data (`compulsory`)
+   * `s3_model_uri` s3_uri of the model to run the inference with (`Optional`), if not given the one deployed will be used
+   * `s3_output_uri` s3_uri to save the output csv (`Optional`), if not given only returned in the response
+   * `skip_feature_generator` if file provided is not processed, it needs to be processed and flag will be set to `false` else `true`
 
 
-## 6. Contributing
-Contributions to improve the model's accuracy, efficiency, or code quality are welcome. Please refer to the contributing guidelines for more details.
-
-## 7. License
-Specify your project's license here, ensuring compliance with the data usage policies and legal requirements.
 
 
+### HINTS
+before using the repo, please make sure the aws credentials is configured or you have exported the following environment variables if you are using docker container
+
+1. export `AWS_ACCESS_KEY_ID` in the environment variable
+
+2. export `AWS_SECRET_ACCESS_KEY` in the environment variable
+3. export `NEPTUNE_API_TOKEN` in the environment variable

@@ -1,12 +1,10 @@
 from fastapi import FastAPI, File, UploadFile, HTTPException, Form, Body, Query
 from fastapi import APIRouter
 from typing import Optional
-
 import pickle
 from src.helpers.prediction_pipeline import prediction_data_pipeline
 import os
 from src.utils.s3_handler import S3handler
-import logging
 from botocore.exceptions import NoCredentialsError, ClientError
 import tempfile
 import uuid
@@ -72,9 +70,9 @@ async def predict_file(file: UploadFile = File(..., description="CSV input file"
                                                                             "are needed from a specific model"),
                        s3_output_uri: Optional[str] = Form(None, description="s3_uri if the output needs to be saved "
                                                                              "in S3"),
-                       skip_feature_generator: bool = Body(..., description="Flag to skip feature "
-                                                                                           "extractor if already "
-                                                                                           "processed")):
+                       skip_feature_generator: bool = Form(False, description="Flag to skip feature "
+                                                                              "extractor if already "
+                                                                              "processed")):
     try:
         s3_handler = S3handler()
         if s3_model_uri:
@@ -92,7 +90,6 @@ async def predict_file(file: UploadFile = File(..., description="CSV input file"
             model_files = [f for f in os.listdir('models') if f.endswith('.pkl')]
 
             if not model_files:
-                print("Yes")
                 raise HTTPException(status_code=400, detail="There is no model deployed, First deploy the model.")
 
             if len(model_files) != 1:
@@ -111,7 +108,6 @@ async def predict_file(file: UploadFile = File(..., description="CSV input file"
         combined_df['Y_test'] = y
         combined_df['Y_pred'] = y_pred
         combined_json = combined_df.to_dict(orient="records")
-
         if s3_output_uri:
             csv_file_name = f"predictions_{uuid.uuid4()}.csv"
             temp_csv_path = os.path.join(tempfile.gettempdir(), csv_file_name)

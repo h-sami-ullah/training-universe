@@ -3,8 +3,6 @@ data_collection_settings:
   dropna_axis: 0
   dropna_inplace: true
 
-feature_generator:
-  random_seed: 42
 
 data_management:
   save_folder_processed: "data"
@@ -15,6 +13,7 @@ data_management:
 model:
   model_save_folder: "models"
   model_type: "RandomForestRegressor"
+  random_seed: 42
   parameter_search_enabled: true
   params_for_grid_search:
     max_depth:
