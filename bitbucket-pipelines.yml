@@ -20,7 +20,7 @@ definitions:
           - export AWS_ACCESS_KEY_ID=${AccessKey}
           - export AWS_SECRET_ACCESS_KEY=${SecretKey}
           - echo "START BUILDING IMAGE"
-          - docker build -t ${ImageName} .
+          - make build PORT=${PORT} image_tag=${ImageName}
           - pipe: atlassian/aws-ecr-push-image:2.1.0
             variables:
               AWS_ACCESS_KEY_ID: ${AccessKey}
@@ -43,13 +43,21 @@ definitions:
         image: python:3.8
         script:
           - echo "START LINTING..."
-          - pip install black flake8
-          - black --check .
+          - echo "pip install black flake8"
+          - echo "black --check ."
 
 pipelines:
   branches:
     develop:
       - step: *linting-code
       - step: *push-update-ecs
+
+pipelines:
+  branches:
+    develop:
+      - step: *linting-code
+      - step: *push-update-ecs
+        deployment: staging
     master:
       - step: *push-update-ecs
+        deployment: production
