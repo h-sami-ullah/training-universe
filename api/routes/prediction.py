@@ -1,7 +1,7 @@
-from fastapi import FastAPI, File, UploadFile, HTTPException, Form
+from fastapi import FastAPI, File, UploadFile, HTTPException, Form, Body, Query
 from fastapi import APIRouter
 from typing import Optional
-import pandas as pd
+
 import pickle
 from src.helpers.prediction_pipeline import prediction_data_pipeline
 import os
@@ -11,28 +11,25 @@ from botocore.exceptions import NoCredentialsError, ClientError
 import tempfile
 import uuid
 from urllib.parse import urlparse
-
-
-
-
-
-
+import logging
 
 router = APIRouter()
+
+
 @router.get("/")
 async def read_root():
     return {"message": "Welcome to the model evaluation API!"}
 
 
 @router.post("/deploy-model/")
-async def deploy_model(s3_uri: str):
+async def deploy_model(s3_model_uri: str = Query(..., description="s3_uri of the model to deploy")):
     # Validate the S3 URI format
-    if not s3_uri.startswith("s3://"):
+    if not s3_model_uri.startswith("s3://"):
         logging.error("Invalid S3 URI format.")
         raise HTTPException(status_code=400, detail="Invalid S3 URI format.")
     try:
         s3_handler = S3handler()
-        model_bucket, model_key = s3_handler.parse_s3_uri(s3_uri)
+        model_bucket, model_key = s3_handler.parse_s3_uri(s3_model_uri)
 
         # Clear any previous models in the directory
         models_dir = 'models'
@@ -70,10 +67,14 @@ async def deploy_model(s3_uri: str):
 
 
 @router.post("/model/predict_file/")
-async def predict_file(file: UploadFile = File(...),
-                       s3_model_uri: Optional[str] = Form(None),
-                       s3_output_uri: Optional[str] = Form(None),
-                       skip_feature_generator: Optional[bool] = Form(False),):
+async def predict_file(file: UploadFile = File(..., description="CSV input file"),
+                       s3_model_uri: Optional[str] = Form(None, description="s3_uri of the model if the predictions "
+                                                                            "are needed from a specific model"),
+                       s3_output_uri: Optional[str] = Form(None, description="s3_uri if the output needs to be saved "
+                                                                             "in S3"),
+                       skip_feature_generator: bool = Body(..., description="Flag to skip feature "
+                                                                                           "extractor if already "
+                                                                                           "processed")):
     try:
         s3_handler = S3handler()
         if s3_model_uri:
@@ -132,5 +133,3 @@ async def predict_file(file: UploadFile = File(...),
     except Exception as e:
         logging.error(f"Prediction error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
-
-
