@@ -67,11 +67,40 @@ def training_data_pipeline(configs: Dict[str, Any],
             df = feature_generator.df
 
         X, y = prepare_model_data(df)
+        X_train, X_test, y_train, y_test = split_data(X, y, configs['data_management']['train_test_split'])
+        test_data_save_path = os.path.join(configs['data_management']['save_folder_processed'], 'test_data.csv')
+        save_test_data(X_test, y_test, test_data_save_path)
 
-        return split_data(X, y, configs['data_management']['train_test_split'])
+        return X_train, X_test, y_train, y_test
 
     except Exception as e:
         logging.error(f"Error in training data pipeline: {e}")
+        raise
+
+
+def save_test_data(X_test: pd.DataFrame, y_test: pd.Series, save_path: str) -> None:
+    """
+    Saves the test dataset (features and target) to a CSV file.
+
+    Args:
+        X_test (pd.DataFrame): The test features.
+        y_test (pd.Series): The test target.
+        save_path (str): The full path where the test data will be saved.
+
+    Returns:
+        None
+    """
+    try:
+        # Combine features and target into one DataFrame
+        test_data = X_test.copy()
+        test_data['orders_busyness_by_h3_hour'] = y_test
+        # Ensure the directory exists
+        os.makedirs(os.path.dirname(save_path), exist_ok=True)
+        # Save the DataFrame to CSV
+        test_data.to_csv(save_path, index=False)
+        logging.info(f"Test data successfully saved to {save_path}")
+    except Exception as e:
+        logging.error(f"Failed to save test data to {save_path}. Error: {e}")
         raise
 
 
@@ -138,7 +167,7 @@ def get_model(configs: Dict[str, Any]) -> BaseEstimator:
 
         # Initialize the model based on the model_type
         if model_type == "RandomForestRegressor":
-            model = RandomForestRegressor(random_state=0, n_jobs=-1)
+            model = RandomForestRegressor(random_state=configs['model']['random_seed'], n_jobs=-1)
         # Add more model types here as elif statements
         # elif model_type == "AnotherModel":
         #     model = AnotherModel(...)
