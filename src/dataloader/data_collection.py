@@ -3,7 +3,9 @@ import logging
 
 
 class DataCollection:
-    def __init__(self, file_path: str, dropna_axis: int = 0, dropna_inplace: bool = True) -> None:
+    def __init__(
+        self, file_path: str, dropna_axis: int = 0, dropna_inplace: bool = True
+    ) -> None:
         """
         Initializes the DataCollection object by loading and optionally cleaning data from a CSV file, and generating
         unique restaurant IDs.
@@ -23,7 +25,9 @@ class DataCollection:
             self.df = pd.read_csv(file_path)
             logging.info(f"Data loaded successfully from {file_path}.")
         except FileNotFoundError as e:
-            logging.error(f"File not found at {file_path}. Please check the file path and try again. Error: {e}")
+            logging.error(
+                f"File not found at {file_path}. Please check the file path and try again. Error: {e}"
+            )
             raise
         except Exception as e:
             logging.error(f"An unexpected error occurred while loading data: {e}")
@@ -45,19 +49,20 @@ class DataCollection:
             return
 
         restaurants_ids = {}
-        for lat, lon in zip(self.df['restaurant_lat'], self.df['restaurant_lon']):
+        for lat, lon in zip(self.df["restaurant_lat"], self.df["restaurant_lon"]):
             id = f"{lat}_{lon}"
             if id not in restaurants_ids:
                 restaurants_ids[id] = {"lat": lat, "lon": lon}
 
         for i, key in enumerate(restaurants_ids.keys()):
-            restaurants_ids[key]['id'] = i
+            restaurants_ids[key]["id"] = i
 
-        self.df['restaurant_id'] = [restaurants_ids[f"{lat}_{lon}"]['id'] for lat, lon in
-                                    zip(self.df['restaurant_lat'], self.df['restaurant_lon'])]
+        self.df["restaurant_id"] = [
+            restaurants_ids[f"{lat}_{lon}"]["id"]
+            for lat, lon in zip(self.df["restaurant_lat"], self.df["restaurant_lon"])
+        ]
         self.restaurants_ids = restaurants_ids
         logging.info("Unique restaurant IDs generated.")
-
 
     def get_unique_couriers(self) -> int:
         """
@@ -68,7 +73,9 @@ class DataCollection:
         """
 
         if self.df is None:
-            logging.error("DataFrame is not initialized. Unable to determine unique couriers.")
+            logging.error(
+                "DataFrame is not initialized. Unable to determine unique couriers."
+            )
             return 0
         return len(self.df.courier_id.unique())
 
@@ -81,9 +88,11 @@ class DataCollection:
             int: The count of unique restaurants.
         """
         if self.df is None:
-            logging.error("DataFrame is not initialized. Unable to determine unique restaurants.")
+            logging.error(
+                "DataFrame is not initialized. Unable to determine unique restaurants."
+            )
             return 0
-        return len(self.df['restaurant_id'].unique())
+        return len(self.df["restaurant_id"].unique())
 
     def get_dataframe(self) -> pd.DataFrame:
         """
@@ -113,6 +122,8 @@ class DataCollection:
 
 if __name__ == "__main__":
     # Example usage
-    data_collector = DataCollection(r"C:\Users\Hafiz\Downloads\Laptop\Personal\Notebook\final_dataset (2).csv")
+    data_collector = DataCollection(
+        r"C:\Users\Hafiz\Downloads\Laptop\Personal\Notebook\final_dataset (2).csv"
+    )
     dataframe = data_collector.get_dataframe()
     print(dataframe.head())

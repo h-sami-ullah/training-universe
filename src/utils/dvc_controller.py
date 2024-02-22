@@ -48,7 +48,7 @@ class DvcDataSaver:
             repo (Repo): The DVC repository object.
         """
 
-        config_path = os.path.join(repo.root_dir, '.dvc', 'config')
+        config_path = os.path.join(repo.root_dir, ".dvc", "config")
         config = configparser.ConfigParser()
 
         try:
@@ -57,15 +57,17 @@ class DvcDataSaver:
 
             if not config.has_section(remote_section):
                 config.add_section(remote_section)
-            config.set(remote_section, 'url', self.remote_url)
+            config.set(remote_section, "url", self.remote_url)
 
-            if 'core' not in config.sections():
-                config.add_section('core')
-            config.set('core', 'remote', self.remote_name)
+            if "core" not in config.sections():
+                config.add_section("core")
+            config.set("core", "remote", self.remote_name)
 
-            with open(config_path, 'w') as configfile:
+            with open(config_path, "w") as configfile:
                 config.write(configfile)
-                logging.info(f"Remote '{self.remote_name}' configured as default in DVC.")
+                logging.info(
+                    f"Remote '{self.remote_name}' configured as default in DVC."
+                )
         except Exception as e:
             logging.error(f"Error configuring DVC remote: {e}")
             raise
