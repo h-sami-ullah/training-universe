@@ -6,6 +6,7 @@ import h3
 from sklearn.preprocessing import LabelEncoder
 from typing import Dict, Union, Tuple, List
 import logging
+np.random.seed(42)
 
 class FeatureExtractor:
 
@@ -185,7 +186,6 @@ class FeatureExtractor:
         Assigns each data point to the nearest centroid and adds the corresponding cluster embedding feature.
         """
         logging.info("Adding Cluster Embedding Feature.")
-        np.random.seed(1)
         centroids = self.initiate_centroids(k=k)
         assignation, assign_errors = self.centroid_assignation(centroids)
         self.df['Five_Clusters_embedding'] = assignation
