@@ -16,9 +16,9 @@ import copy
 import time
 
 
-def training_data_pipeline(configs: Dict[str, Any],
-                           skip_feature_generator: bool = False) -> Tuple[
-    pd.DataFrame, pd.DataFrame, pd.Series, pd.Series]:
+def training_data_pipeline(
+    configs: Dict[str, Any], skip_feature_generator: bool = False
+) -> Tuple[pd.DataFrame, pd.DataFrame, pd.Series, pd.Series]:
     """
     Collect data, generate features, and split into training and testing datasets.
 
@@ -33,7 +33,11 @@ def training_data_pipeline(configs: Dict[str, Any],
     """
 
     try:
-        path_to_save = os.path.join(os.getcwd(), configs['data_management']['save_folder_processed'], 'processed.csv')
+        path_to_save = os.path.join(
+            os.getcwd(),
+            configs["data_management"]["save_folder_processed"],
+            "processed.csv",
+        )
 
         if skip_feature_generator:
             logging.info("Skipping Feature Generation, if already exist")
@@ -47,28 +51,43 @@ def training_data_pipeline(configs: Dict[str, Any],
                 logging.error(error_msg)
                 raise FileNotFoundError(error_msg)
         else:
-            data_collector = DataCollection(**configs['data_collection_settings'])
+            data_collector = DataCollection(**configs["data_collection_settings"])
             logging.info("Data Collector initialized.")
             dataframe = data_collector.get_dataframe()
             logging.info("restaurants_ids generated.")
-            feature_generator = FeatureExtractor(copy.deepcopy(dataframe), data_collector.restaurants_ids)
-            logging.info("Feature_generator initialized. Generating features with feature_generator.")
+            feature_generator = FeatureExtractor(
+                copy.deepcopy(dataframe), data_collector.restaurants_ids
+            )
+            logging.info(
+                "Feature_generator initialized. Generating features with feature_generator."
+            )
             feature_generator.generate_features()
             logging.info("Generating features successful.")
 
             # Save original and processed dataframes
-            data_collector.save_dataframe(os.path.join(configs['data_management']['save_folder_processed'], 'original'
-                                                                                                            '.csv'))
-            feature_generator.save_dataframe(os.path.join(configs['data_management']['save_folder_processed'], 'proces'
-                                                                                                               'sed.csv'
-                                                          ))
+            data_collector.save_dataframe(
+                os.path.join(
+                    configs["data_management"]["save_folder_processed"],
+                    "original" ".csv",
+                )
+            )
+            feature_generator.save_dataframe(
+                os.path.join(
+                    configs["data_management"]["save_folder_processed"],
+                    "proces" "sed.csv",
+                )
+            )
 
             # Prepare data for model training
             df = feature_generator.df
 
         X, y = prepare_model_data(df)
-        X_train, X_test, y_train, y_test = split_data(X, y, configs['data_management']['train_test_split'])
-        test_data_save_path = os.path.join(configs['data_management']['save_folder_processed'], 'test_data.csv')
+        X_train, X_test, y_train, y_test = split_data(
+            X, y, configs["data_management"]["train_test_split"]
+        )
+        test_data_save_path = os.path.join(
+            configs["data_management"]["save_folder_processed"], "test_data.csv"
+        )
         save_test_data(X_test, y_test, test_data_save_path)
 
         return X_train, X_test, y_train, y_test
@@ -93,7 +112,7 @@ def save_test_data(X_test: pd.DataFrame, y_test: pd.Series, save_path: str) -> N
     try:
         # Combine features and target into one DataFrame
         test_data = X_test.copy()
-        test_data['orders_busyness_by_h3_hour'] = y_test
+        test_data["orders_busyness_by_h3_hour"] = y_test
         # Ensure the directory exists
         os.makedirs(os.path.dirname(save_path), exist_ok=True)
         # Save the DataFrame to CSV
@@ -104,8 +123,9 @@ def save_test_data(X_test: pd.DataFrame, y_test: pd.Series, save_path: str) -> N
         raise
 
 
-def split_data(X: pd.DataFrame, y: pd.Series, split_config: Dict[str, Any]) -> Tuple[
-    pd.DataFrame, pd.DataFrame, pd.Series, pd.Series]:
+def split_data(
+    X: pd.DataFrame, y: pd.Series, split_config: Dict[str, Any]
+) -> Tuple[pd.DataFrame, pd.DataFrame, pd.Series, pd.Series]:
     """
     Split data into training and testing sets.
 
@@ -118,7 +138,11 @@ def split_data(X: pd.DataFrame, y: pd.Series, split_config: Dict[str, Any]) -> T
         Tuple[pd.DataFrame, pd.DataFrame, pd.Series, pd.Series]: Split training and testing features and targets.
     """
     X_train, X_test, y_train, y_test = train_test_split(
-        X, y, test_size=split_config['test_size'], random_state=split_config['random_seed'])
+        X,
+        y,
+        test_size=split_config["test_size"],
+        random_state=split_config["random_seed"],
+    )
     return X_train, X_test, y_train.values.ravel(), y_test.values.ravel()
 
 
@@ -134,13 +158,19 @@ def prepare_model_data(df: pd.DataFrame) -> Tuple[pd.DataFrame, pd.Series]:
     """
     # Assuming 'df' contains the columns listed below as features, adjust as needed
     feature_columns = [
-        'dist_to_restaurant', 'Hdist_to_restaurant', 'avg_Hdist_to_restaurants',
-        'date_day_number', 'restaurant_id', 'Five_Clusters_embedding', 'h3_index',
-        'date_hour_number', 'restaurants_per_index'
+        "dist_to_restaurant",
+        "Hdist_to_restaurant",
+        "avg_Hdist_to_restaurants",
+        "date_day_number",
+        "restaurant_id",
+        "Five_Clusters_embedding",
+        "h3_index",
+        "date_hour_number",
+        "restaurants_per_index",
     ]
 
     # Assuming 'orders_busyness_by_h3_hour' is the target variable
-    target_column = 'orders_busyness_by_h3_hour'
+    target_column = "orders_busyness_by_h3_hour"
 
     # Selecting the specified columns from the DataFrame
     X = df[feature_columns]
@@ -162,12 +192,14 @@ def get_model(configs: Dict[str, Any]) -> BaseEstimator:
         BaseEstimator: Configured model or GridSearchCV object if parameter search is enabled.
     """
     try:
-        model_type = configs['model']['model_type']
+        model_type = configs["model"]["model_type"]
         model = None
 
         # Initialize the model based on the model_type
         if model_type == "RandomForestRegressor":
-            model = RandomForestRegressor(random_state=configs['model']['random_seed'], n_jobs=-1)
+            model = RandomForestRegressor(
+                random_state=configs["model"]["random_seed"], n_jobs=-1
+            )
         # Add more model types here as elif statements
         # elif model_type == "AnotherModel":
         #     model = AnotherModel(...)
@@ -176,14 +208,14 @@ def get_model(configs: Dict[str, Any]) -> BaseEstimator:
             raise ValueError(f"Model type '{model_type}' is not supported.")
 
         # Check if parameter search is enabled
-        if configs['model']['parameter_search_enabled']:
+        if configs["model"]["parameter_search_enabled"]:
             # Ensure grid_search parameters are properly structured for GridSearchCV
             grid_search_params = {
-                'param_grid': configs['model']['params_for_grid_search'],
-                'cv': configs['model']['grid_search']['cv'],
-                'n_jobs': configs['model']['grid_search']['n_jobs'],
-                'verbose': configs['model']['grid_search']['verbose'],
-                'scoring': configs['model']['grid_search']['scoring']
+                "param_grid": configs["model"]["params_for_grid_search"],
+                "cv": configs["model"]["grid_search"]["cv"],
+                "n_jobs": configs["model"]["grid_search"]["n_jobs"],
+                "verbose": configs["model"]["grid_search"]["verbose"],
+                "scoring": configs["model"]["grid_search"]["scoring"],
             }
             grid_search = GridSearchCV(estimator=model, **grid_search_params)
             return grid_search
@@ -220,14 +252,20 @@ def neptune_logging(configs: Dict[str, Any], run):
     """
     try:
         run["params"] = configs
-        if configs['dvc_settings']['dvc']:
+        if configs["dvc_settings"]["dvc"]:
             dvc_files = glob.glob(os.path.join(os.getcwd(), "*.dvc"))
             for dvc_file in dvc_files:
-                run["data/" + os.path.basename(dvc_file)].upload(os.path.basename(dvc_file))
-        model_path = os.path.join(configs['model']['model_save_folder'], run["sys/id"].fetch() + ".pkl")
+                run["data/" + os.path.basename(dvc_file)].upload(
+                    os.path.basename(dvc_file)
+                )
+        model_path = os.path.join(
+            configs["model"]["model_save_folder"], run["sys/id"].fetch() + ".pkl"
+        )
         run["model/" + run["sys/id"].fetch() + ".pkl"].upload(model_path)
-        log_filename = os.path.join(configs['logger']['folder'], run["sys/id"].fetch() + ".log")
-        run['logs/' + os.path.basename(log_filename)].upload(log_filename)
+        log_filename = os.path.join(
+            configs["logger"]["folder"], run["sys/id"].fetch() + ".log"
+        )
+        run["logs/" + os.path.basename(log_filename)].upload(log_filename)
         time.sleep(40)
         remove_files(run["sys/id"].fetch(), configs)
         return True
@@ -288,13 +326,17 @@ def remove_files(run_id, configs):
     Returns:
     None
     """
-    log_dir = configs.get('logger', {}).get('folder', '')
-    model_dir = configs.get('model', {}).get('model_save_folder', '')
-    data_management = configs.get('data_management', {})
-    path_to_processed = os.path.join(data_management.get('save_folder_processed', ''), 'processed.csv')
-    path_to_original = os.path.join(data_management.get('save_folder_processed', ''), 'original.csv')
+    log_dir = configs.get("logger", {}).get("folder", "")
+    model_dir = configs.get("model", {}).get("model_save_folder", "")
+    data_management = configs.get("data_management", {})
+    path_to_processed = os.path.join(
+        data_management.get("save_folder_processed", ""), "processed.csv"
+    )
+    path_to_original = os.path.join(
+        data_management.get("save_folder_processed", ""), "original.csv"
+    )
 
-    if configs.get('clear_cache', {}).get('if_data', False):
+    if configs.get("clear_cache", {}).get("if_data", False):
         for path in [path_to_processed, path_to_original]:
             if os.path.isfile(path):
                 try:
@@ -302,15 +344,15 @@ def remove_files(run_id, configs):
                 except Exception as e:
                     logging.error(f"Error removing file {path}: {e}")
 
-    if configs.get('clear_cache', {}).get('if_old_model_and_log', False):
+    if configs.get("clear_cache", {}).get("if_old_model_and_log", False):
         remove_all_except_latest(log_dir, f"{run_id}.log")
         remove_all_except_latest(model_dir, f"{run_id}.pkl")
 
-    if configs.get('clear_cache', {}).get('if_dvc', False):
+    if configs.get("clear_cache", {}).get("if_dvc", False):
 
-        if os.path.isfile('data.dvc'):
+        if os.path.isfile("data.dvc"):
             try:
-                os.remove('data.dvc')
+                os.remove("data.dvc")
                 logging.info("data.dvc file is removed")
             except Exception as e:
                 logging.error(f"Error removing file {'data.dvc'}: {e}")
