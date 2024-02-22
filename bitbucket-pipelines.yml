@@ -51,7 +51,7 @@ pipelines:
     develop:
       - step: *linting-code
       - step: *push-update-ecs
-      
+
 pipelines:
   branches:
     develop:

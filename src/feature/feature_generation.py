@@ -5,7 +5,7 @@ from math import radians
 import h3
 from sklearn.preprocessing import LabelEncoder
 from typing import Dict, Union, Tuple, List
-
+import logging
 
 class FeatureExtractor:
 
