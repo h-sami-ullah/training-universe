@@ -1,0 +1,55 @@
+data_collection_settings:
+  file_path: "C:\\Users\\Hafiz\\Downloads\\Laptop\\Personal\\Notebook\\final_dataset (2).csv"
+  dropna_axis: 0
+  dropna_inplace: true
+
+
+data_management:
+  save_folder_processed: "data"
+  train_test_split:
+    test_size: 0.33
+    random_seed: 42
+
+model:
+  model_save_folder: "models"
+  model_type: "RandomForestRegressor"
+  random_seed: 42
+  parameter_search_enabled: true
+  params_for_grid_search:
+    max_depth:
+      - 4
+      - 5
+    min_samples_leaf:
+      - 50
+      - 75
+    n_estimators:
+      - 100
+      - 150
+  grid_search:
+    cv: 3
+    n_jobs: -1
+    verbose: 2
+    scoring: "r2"
+
+dvc_settings:
+  dvc: true
+  dvc_parameters:
+    dvc_data_path: "data"
+
+
+logger:
+    folder: "logs"
+    type: "neptune"
+    settings:
+      project_name: "Projects-Hafiz/Hotspot-Finder"
+      experiment_name: "sample-project"
+      tags:
+        - "RandomForestRegressor"
+        - "regression"
+
+clear_cache:
+  if_data: false
+  if_old_model_and_log: ture
+  if_dvc: ture
+
+
